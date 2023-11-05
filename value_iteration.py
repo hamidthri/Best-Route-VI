@@ -56,9 +56,9 @@ class GridWorld(object):
                 n_state = (state_i + move[0], state_j + move[1])
 
 
-                if n_state in self.items.get('fire').get('loc'):
+                if np.array_equal(n_state, self.items.get('fire').get('loc')):
                     reward += self.items.get('fire').get('reward')
-                elif n_state in self.items.get('water').get('loc'):
+                elif np.array_equal(n_state, self.items.get('water').get('loc')):
                     reward += self.items.get('water').get('reward')
                 elif self.check_move(n_state, state_i, state_j):
                     n_state = (state_i, state_j)
@@ -76,7 +76,7 @@ class GridWorld(object):
         return P
 
     def check_terminal(self, state):
-        return state in self.items.get('fire').get('loc') + self.items.get('water').get('loc')
+        return state in self.items.get('fire').get('loc').tolist() + self.items.get('water').get('loc').tolist()
 
     def check_move(self, n_state, oldState_i, oldState_j):
         if n_state not in self.state_space:
@@ -153,7 +153,7 @@ def interate_values(grid, v , policy, gamma, theta):
         for state in grid.state_space:
             i += 1
             # print (state)
-            if  grid.check_terminal(state):
+            if grid.check_terminal(state):
                 v[state] = 0
 
             else:
@@ -193,8 +193,8 @@ def interate_values(grid, v , policy, gamma, theta):
 if __name__ == '__main__':
 
     grid_size = (2, 2)
-    items = {'fire': {'reward': -10, 'loc': [12]},
-             'water': {'reward': 10, 'loc': [65]}}
+    items = {'fire': {'reward': -10, 'loc': np.asarray([1, 0])},
+             'water': {'reward': 10, 'loc': np.asarray([0, 1])}}
 
     gamma = 1.0
     theta = 1e-10
