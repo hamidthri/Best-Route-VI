@@ -6,7 +6,8 @@ class GridWorld(object):
         self.step_reward = -1
         self.m = gridSize[0]
         self.n = gridSize[1]
-        self.grid = np.random.random(gridSize)
+        self.grid = np.random.randint(0, 5, gridSize)
+        print((self.grid))
         # print(self.grid)
         self.items = items
 
@@ -49,8 +50,8 @@ class GridWorld(object):
         # print(self.state_space)
         for state_i, state_j in self.state_space:
             for action in self.actions:
-                # reward = self.set_step_reward(state_i, state_j, action)
-                reward = -1
+                reward = -self.set_step_reward(state_i, state_j, action)
+                # reward = -1
                 # n_state = state + self.action_space[action]
                 move = self.action_space[action]
                 n_state = (state_i + move[0], state_j + move[1])
@@ -76,7 +77,8 @@ class GridWorld(object):
         return P
 
     def check_terminal(self, state):
-        return state in self.items.get('fire').get('loc').tolist() + self.items.get('water').get('loc').tolist()
+        return (state[0], state[1]) == (self.items.get('fire').get('loc').tolist()[0], self.items.get('fire').get('loc').tolist()[1]) or (state[0], state[1]) == (self.items.get('water').get('loc').tolist()[0], self.items.get('water').get('loc').tolist()[1])
+        # return state in self.items.get('fire').get('loc').tolist() + self.items.get('water').get('loc').tolist()
 
     def check_move(self, n_state, oldState_i, oldState_j):
         if n_state not in self.state_space:
@@ -96,13 +98,13 @@ def print_v(v, grid):
     norm = plt.Normalize(v.min(), v.max())
     rgba = cmap(norm(v))
 
-    for w in grid.items.get('water').get('loc'):
-        idx = np.unravel_index(w, v.shape)
-        rgba[idx] = 0.0, 0.5, 0.8, 1.0
+    # for w in grid.items.get('water').get('loc').tolist():
+    #     idx = np.unravel_index(w, v.shape)
+    rgba[tuple(grid.items.get('water').get('loc').tolist())] = 0.0, 0.5, 0.8, 1.0
 
-    for f in grid.items.get('fire').get('loc'):
-        idx = np.unravel_index(f, v.shape)
-        rgba[idx] = 1.0, 0.5, 0.1, 1.0
+    # for f in grid.items.get('fire').get('loc'):
+    #     idx = np.unravel_index(f, v.shape)
+    rgba[tuple(grid.items.get('fire').get('loc').tolist())] = 1.0, 0.5, 0.1, 1.0
 
     fig, ax = plt.subplots()
     im = ax.imshow(rgba, interpolation='nearest')
@@ -125,13 +127,13 @@ def print_policy(v, policy, grid):
     norm = plt.Normalize(v.min(), v.max())
     rgba = cmap(norm(v))
 
-    for w in grid.items.get('water').get('loc'):
-        idx = np.unravel_index(w, v.shape)
-        rgba[idx] = 0.0, 0.5, 0.8, 1.0
+    # for w in grid.items.get('water').get('loc').tolist():
+    #     idx = np.unravel_index(w, v.shape)
+    rgba[tuple(grid.items.get('water').get('loc').tolist())] = 0.0, 0.5, 0.8, 1.0
 
-    for f in grid.items.get('fire').get('loc'):
-        idx = np.unravel_index(f, v.shape)
-        rgba[idx] = 1.0, 0.5, 0.1, 1.0
+    # for f in grid.items.get('fire').get('loc'):
+    #     idx = np.unravel_index(f, v.shape)
+    rgba[tuple(grid.items.get('fire').get('loc').tolist())] = 1.0, 0.5, 0.1, 1.0
 
     fig, ax = plt.subplots()
     im = ax.imshow(rgba, interpolation='nearest')
@@ -148,7 +150,9 @@ def print_policy(v, policy, grid):
 def interate_values(grid, v , policy, gamma, theta):
     converged = False
     i = 0
-    while not converged:
+    j = 0
+    # while not converged:
+    while (j < 200):
         DELTA = 0
         for state in grid.state_space:
             i += 1
@@ -165,26 +169,30 @@ def interate_values(grid, v , policy, gamma, theta):
                     # if reward == 9:
                     #     print(reward + gamma * v[n_state])
                     new_v.append(reward + gamma * v[n_state])
-                    # print(new_v)
+                # print(new_v)
 
                 v[state] = max(new_v)
                 # print(old_v - v[state])
                 DELTA = max(DELTA, np.abs(old_v - v[state]))
+                # print(DELTA)
+                j += 1
                 converged = True if DELTA < theta else False
+            # print(v)
 
-        for state in grid.state_space:
-            i += 1
-            new_vs = []
+    for state in grid.state_space:
+        i += 1
+        new_vs = []
 
-            for action in grid.actions:
-                (n_state, reward) = grid.P.get((state[0], state[1], action))
-                new_vs.append(reward + gamma * v[n_state])
+        for action in grid.actions:
+            (n_state, reward) = grid.P.get((state[0], state[1], action))
+            new_vs.append(reward + gamma * v[n_state])
 
-            new_vs = np.array(new_vs)
-            best_action_idx = np.where(new_vs == new_vs.max())[0]
+        new_vs = np.array(new_vs)
+        best_action_idx = np.where(new_vs == new_vs.max())[0]
 
-            # Assign the index of the best action to the policy array
-            policy[state[0], state[1]] = best_action_idx[0]
+        # Assign the index of the best action to the policy array
+        policy[state[0], state[1]] = best_action_idx[0]
+        policy[state[0], state[1]] = grid.actions[best_action_idx[0]]
 
     print(i, 'iterations of state space')
     return v, policy
@@ -192,9 +200,9 @@ def interate_values(grid, v , policy, gamma, theta):
 
 if __name__ == '__main__':
 
-    grid_size = (2, 2)
-    items = {'fire': {'reward': -10, 'loc': np.asarray([1, 0])},
-             'water': {'reward': 10, 'loc': np.asarray([0, 1])}}
+    grid_size = (4, 4)
+    items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
+             'water': {'reward': 10, 'loc': np.asarray([3, 3])}}
 
     gamma = 1.0
     theta = 1e-10
