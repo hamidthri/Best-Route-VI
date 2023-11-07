@@ -6,9 +6,13 @@ class GridWorld(object):
         self.step_reward = -1
         self.m = gridSize[0]
         self.n = gridSize[1]
-        self.grid = np.array([[0,  7,8, -10, -20, 1],
+        self.grid = np.array([[0, 7, 8, -10, 20, 1],
                               [1, 8, -5, 17, -1,1],
-                              [10, 8, 10, 3, 4,0],
+                              [10, 1, 100, 3, 4,0],
+                              [10, 12, 1, 1, -4,0],
+                              [10, 8, -10, 3, 4,0],
+                              [-10, 8, -10, 3, 4,0],
+                              [10, -8, 10, 3, -4,0],
                               [1, 8, 10, 4, 5,0]])
         print((self.grid.shape))
         self.items = items
@@ -108,13 +112,13 @@ def print_policy(v, policy, grid):
     for i in range(v.shape[0]):
         for j in range(v.shape[1]):
             if v[i, j] != 0:
-                text = ax.text(j, i, policy[i, j], ha="center", va="center", color="w")
+                text = ax.text(j, i, policy[i, j], ha="center", va="center", color="b")
 
     plt.axis('off')
     # plt.savefig('deterministic_policy.jpg', bbox_inches='tight', dpi=200)
     plt.show()
 
-def interate_values(grid, v , policy, gamma, theta):
+def iterate_values(grid, v , policy, gamma, theta):
     converged = False
     i = 0
     j = 0
@@ -122,7 +126,6 @@ def interate_values(grid, v , policy, gamma, theta):
         DELTA = 0
         for state in grid.state_space:
             i += 1
-            # print (state)
             # if grid.check_terminal(state):
             #     pass
                 # v[state] = 0
@@ -163,12 +166,12 @@ def interate_values(grid, v , policy, gamma, theta):
 
 if __name__ == '__main__':
 
-    grid_size = (4, 6)
+    grid_size = (8, 6)
     items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
-             'water': {'reward': 100, 'loc': np.asarray([3, 5])}}
+             'water': {'reward': 100, 'loc': np.asarray([2, 5])}}
 
     gamma = 0.95
-    theta = 1e-6
+    theta = 1e-10
 
     v = np.zeros((grid_size[0], grid_size[1]))
     print(v.shape)
@@ -176,7 +179,7 @@ if __name__ == '__main__':
 
     env = GridWorld(grid_size, items)
 
-    v, policy = interate_values(env, v, policy, gamma, theta)
+    v, policy = iterate_values(env, v, policy, gamma, theta)
 
     print_v(v, env)
     print_policy(v, policy, env)
