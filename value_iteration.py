@@ -6,10 +6,11 @@ class GridWorld(object):
         self.step_reward = -1
         self.m = gridSize[0]
         self.n = gridSize[1]
-        self.grid = np.array([[0,  7, 1],
-                              [1, 8, 1],
-                              [1, 8, 0]])
-        print((self.grid))
+        self.grid = np.array([[0,  7,8, -10, -20, 1],
+                              [1, 8, -5, 17, -1,1],
+                              [10, 8, 10, 3, 4,0],
+                              [1, 8, 10, 4, 5,0]])
+        print((self.grid.shape))
         self.items = items
 
         self.state_space = [(i, j) for i in range(self.m) for j in range(self.n)]
@@ -75,13 +76,7 @@ def print_v(v, grid):
     cmap = plt.cm.get_cmap('Greens', 10)
     norm = plt.Normalize(v.min(), v.max())
     rgba = cmap(norm(v))
-
-    # for w in grid.items.get('water').get('loc').tolist():
-    #     idx = np.unravel_index(w, v.shape)
     rgba[tuple(grid.items.get('water').get('loc').tolist())] = 0.0, 0.5, 0.8, 1.0
-
-    # for f in grid.items.get('fire').get('loc'):
-    #     idx = np.unravel_index(f, v.shape)
     rgba[tuple(grid.items.get('fire').get('loc').tolist())] = 1.0, 0.5, 0.1, 1.0
 
     fig, ax = plt.subplots()
@@ -98,8 +93,8 @@ def print_v(v, grid):
 
 
 def print_policy(v, policy, grid):
-    v = np.reshape(v, (grid.n, grid.m))
-    policy = np.reshape(policy, (grid.n, grid.m))
+    v = np.reshape(v, (grid.m, grid.n))
+    policy = np.reshape(policy, (grid.m, grid.n))
     print(policy)
     cmap = plt.cm.get_cmap('Greens', 10)
     norm = plt.Normalize(v.min(), v.max())
@@ -124,7 +119,6 @@ def interate_values(grid, v , policy, gamma, theta):
     i = 0
     j = 0
     while not converged:
-    # while (j < 10):
         DELTA = 0
         for state in grid.state_space:
             i += 1
@@ -145,7 +139,6 @@ def interate_values(grid, v , policy, gamma, theta):
 
             v[state] = max(new_v)
             DELTA = max(DELTA, np.abs(old_v - v[state]))
-            j += 1
             converged = True if DELTA < theta else False
 
     for state in grid.state_space:
@@ -164,19 +157,21 @@ def interate_values(grid, v , policy, gamma, theta):
         policy[state[0], state[1]] = grid.actions[best_action_idx[0]]
 
     print(i, 'iterations of state space')
+    print(v.shape)
     return v, policy
 
 
 if __name__ == '__main__':
 
-    grid_size = (3, 3)
+    grid_size = (4, 6)
     items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
-             'water': {'reward': 100, 'loc': np.asarray([2, 2])}}
+             'water': {'reward': 100, 'loc': np.asarray([3, 5])}}
 
     gamma = 0.95
     theta = 1e-6
 
     v = np.zeros((grid_size[0], grid_size[1]))
+    print(v.shape)
     policy = np.full((grid_size[0], grid_size[1]), 'n', dtype=object)
 
     env = GridWorld(grid_size, items)
