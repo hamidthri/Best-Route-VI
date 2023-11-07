@@ -6,53 +6,39 @@ class GridWorld(object):
         self.step_reward = -1
         self.m = gridSize[0]
         self.n = gridSize[1]
-        self.grid = np.random.randint(0, 5, gridSize)
+        self.grid = np.random.randint(0, 50, gridSize)
+        self.grid = np.array([[0,  -1, 0],
+                              [0, -1, 0],
+                              [0, -1, 0]])
         print((self.grid))
-        # print(self.grid)
         self.items = items
 
-        # self.state_space = (self.m, self.n)
         self.state_space = [(i, j) for i in range(self.m) for j in range(self.n)]
-        # print(self.state_space)
-
-        # self.action_space = {'U': -self.m, 'D': self.m, 'L': -1, 'R': 1}
         self.action_space = {'U': (-1, 0), 'D': (1, 0), 'L': (0, -1), 'R': (0, 1)}
         self.actions = ['U', 'D', 'L', 'R']
 
         self.P = self.int_P()
 
     def set_step_reward(self, state_x, state_y, action):
-        # Calculate the future state based on the action
-        # i, j = state
         i, j = state_x, state_y
-        # print (i, j)
-        # print (action)
         if action in self.action_space:
             move = self.action_space[action]
-            # print(action)
             future_state = (i + move[0], j + move[1])
-            # print(future_state)
         else:
-            return -1  # Invalid action
+            return -1
 
-        # Check if the future state is within the map's boundaries
         if 0 <= future_state[0] < self.m and 0 <= future_state[1] < self.n:
-        # Check if the second element of future_state is "G"
           if self.grid[future_state[0]][future_state[1]] == "G":
-              return 0  # Return a different reward for "G" condition
+              return 0 
           else:
-              # print(self.grid[future_state[0]][future_state[1]])
-              return self.grid[future_state[0]][future_state[1]]  # Default reward
+              return self.grid[future_state[0]][future_state[1]]
         else:
-            return -1  # Default step reward for invalid moves
+            return 1
     def int_P(self):
         P = {}
-        # print(self.state_space)
         for state_i, state_j in self.state_space:
             for action in self.actions:
                 reward = -self.set_step_reward(state_i, state_j, action)
-                # reward = -1
-                # n_state = state + self.action_space[action]
                 move = self.action_space[action]
                 n_state = (state_i + move[0], state_j + move[1])
 
@@ -63,22 +49,15 @@ class GridWorld(object):
                     reward += self.items.get('water').get('reward')
                 elif self.check_move(n_state, state_i, state_j):
                     n_state = (state_i, state_j)
-
                 P[(state_i, state_j ,action)] = (n_state, reward)
-                # print("state")
-                # print(state_i, state_j)
-                # print ("action")
-                # print(action)
-                # print("next state")
-                # print(n_state)
-                # print("reward")
-                # print(reward)
-                # print(P[(state_i, state_j ,action)])
+                # print(f"state: {state_i} {state_j}")
+                # print(f"n state: {n_state}, reward: {reward}")
+
+        # print(P)
         return P
 
     def check_terminal(self, state):
         return (state[0], state[1]) == (self.items.get('fire').get('loc').tolist()[0], self.items.get('fire').get('loc').tolist()[1]) or (state[0], state[1]) == (self.items.get('water').get('loc').tolist()[0], self.items.get('water').get('loc').tolist()[1])
-        # return state in self.items.get('fire').get('loc').tolist() + self.items.get('water').get('loc').tolist()
 
     def check_move(self, n_state, oldState_i, oldState_j):
         if n_state not in self.state_space:
@@ -92,7 +71,7 @@ class GridWorld(object):
 
 def print_v(v, grid):
     v = np.reshape(v, (grid.m, grid.n))
-    print(v.shape)
+    # print(v.shape)
 
     cmap = plt.cm.get_cmap('Greens', 10)
     norm = plt.Normalize(v.min(), v.max())
@@ -122,22 +101,16 @@ def print_v(v, grid):
 def print_policy(v, policy, grid):
     v = np.reshape(v, (grid.n, grid.m))
     policy = np.reshape(policy, (grid.n, grid.m))
-
+    print(policy)
     cmap = plt.cm.get_cmap('Greens', 10)
     norm = plt.Normalize(v.min(), v.max())
     rgba = cmap(norm(v))
-
-    # for w in grid.items.get('water').get('loc').tolist():
-    #     idx = np.unravel_index(w, v.shape)
     rgba[tuple(grid.items.get('water').get('loc').tolist())] = 0.0, 0.5, 0.8, 1.0
-
-    # for f in grid.items.get('fire').get('loc'):
-    #     idx = np.unravel_index(f, v.shape)
     rgba[tuple(grid.items.get('fire').get('loc').tolist())] = 1.0, 0.5, 0.1, 1.0
-
     fig, ax = plt.subplots()
     im = ax.imshow(rgba, interpolation='nearest')
 
+    print(v)
     for i in range(v.shape[0]):
         for j in range(v.shape[1]):
             if v[i, j] != 0:
@@ -151,33 +124,30 @@ def interate_values(grid, v , policy, gamma, theta):
     converged = False
     i = 0
     j = 0
-    # while not converged:
-    while (j < 200):
+    while not converged:
+    # while (j < 10):
         DELTA = 0
         for state in grid.state_space:
             i += 1
             # print (state)
-            if grid.check_terminal(state):
-                v[state] = 0
+            # if grid.check_terminal(state):
+            #     pass
+                # v[state] = 0
 
-            else:
-                old_v = v[state]
-                new_v = []
-                for action in grid.actions:
-                    (n_state, reward) = grid.P.get((state[0], state[1], action))
-                    # print(reward)
-                    # if reward == 9:
-                    #     print(reward + gamma * v[n_state])
-                    new_v.append(reward + gamma * v[n_state])
-                # print(new_v)
+            # else:
+            old_v = v[state]
+            new_v = []
+            for action in grid.actions:
+                (n_state, reward) = grid.P.get((state[0], state[1], action))
+                # print(reward)
+                # if reward == 9:
+                #     print(reward + gamma * v[n_state])
+                new_v.append(reward + gamma * v[n_state])
 
-                v[state] = max(new_v)
-                # print(old_v - v[state])
-                DELTA = max(DELTA, np.abs(old_v - v[state]))
-                # print(DELTA)
-                j += 1
-                converged = True if DELTA < theta else False
-            # print(v)
+            v[state] = max(new_v)
+            DELTA = max(DELTA, np.abs(old_v - v[state]))
+            j += 1
+            converged = True if DELTA < theta else False
 
     for state in grid.state_space:
         i += 1
@@ -200,15 +170,15 @@ def interate_values(grid, v , policy, gamma, theta):
 
 if __name__ == '__main__':
 
-    grid_size = (4, 4)
+    grid_size = (3, 3)
     items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
-             'water': {'reward': 10, 'loc': np.asarray([3, 3])}}
+             'water': {'reward': 100, 'loc': np.asarray([2, 2])}}
 
-    gamma = 1.0
-    theta = 1e-10
+    gamma = 0.85
+    theta = 1e-1
 
     v = np.zeros((grid_size[0], grid_size[1]))
-    policy = np.full((grid_size[0], grid_size[1]), 'n')
+    policy = np.full((grid_size[0], grid_size[1]), 'n', dtype=object)
 
     env = GridWorld(grid_size, items)
 
