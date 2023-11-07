@@ -6,10 +6,9 @@ class GridWorld(object):
         self.step_reward = -1
         self.m = gridSize[0]
         self.n = gridSize[1]
-        self.grid = np.random.randint(0, 50, gridSize)
-        self.grid = np.array([[0,  -1, 0],
-                              [0, -1, 0],
-                              [0, -1, 0]])
+        self.grid = np.array([[0,  7, 1],
+                              [1, 8, 1],
+                              [1, 8, 0]])
         print((self.grid))
         self.items = items
 
@@ -174,8 +173,8 @@ if __name__ == '__main__':
     items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
              'water': {'reward': 100, 'loc': np.asarray([2, 2])}}
 
-    gamma = 0.85
-    theta = 1e-1
+    gamma = 0.95
+    theta = 1e-6
 
     v = np.zeros((grid_size[0], grid_size[1]))
     policy = np.full((grid_size[0], grid_size[1]), 'n', dtype=object)
