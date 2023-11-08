@@ -116,7 +116,7 @@ def TD(grid, v , policy, gamma, theta):
     actions = ['U', 'D', 'L', 'R']
     i = 0
     j = 0
-    state = (0, 0)
+    state = (0, 0) 
     while j < 1000:
         while(True):
             i += 1
