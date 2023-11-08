@@ -6,14 +6,10 @@ class GridWorld(object):
         self.step_reward = -1
         self.m = gridSize[0]
         self.n = gridSize[1]
-        self.grid = np.array([[0, 7, 8, -10, 20, 1],
-                              [1, 8, -15, -17, -1,1],
-                              [10, 1, 10, 3, 4,0],
-                              [10, 12, 1, 1, -4,0],
-                              [10, 8, -10, 3, 4,0],
-                              [-10, 8, -10, 3, 4,0],
-                              [10, -8, 10, 3, -4,0],
-                              [1, 8, 10, 4, 5,0]])
+        self.grid = np.array([[0, 0, 0, 0],
+                              [0, 0, 0,0],
+                              [0, 0, 0,1],
+                              [0, 0, 0,0]])
         print((self.grid.shape))
         self.items = items
 
@@ -54,10 +50,6 @@ class GridWorld(object):
                 elif self.check_move(n_state, state_i, state_j):
                     n_state = (state_i, state_j)
                 P[(state_i, state_j ,action)] = (n_state, reward)
-                # print(f"state: {state_i} {state_j}")
-                # print(f"n state: {n_state}, reward: {reward}")
-
-        # print(P)
         return P
 
     def check_terminal(self, state):
@@ -118,27 +110,24 @@ def print_policy(v, policy, grid):
     # plt.savefig('deterministic_policy.jpg', bbox_inches='tight', dpi=200)
     plt.show()
 
+
 def TD(grid, v , policy, gamma, theta):
-    z = 0
-    converged = False
-    alpha = 0.001
+    alpha = 0.01
     actions = ['U', 'D', 'L', 'R']
     i = 0
     j = 0
-    while j < 20000:
-        DELTA = 0
-        for state in grid.state_space:
+    state = (0, 0)
+    while j < 1000:
+        while(True):
             i += 1
-            old_v = v[state]
-            new_v = []
             action = np.random.choice(actions)
             (n_state, reward) = grid.P.get((state[0], state[1], action))
             G = reward + gamma * v[n_state]
-            z = G - v[state] + gamma * z
-            v[state] = v[state] + alpha * (G - v[state] + gamma * z)
-            DELTA = max(DELTA, np.abs(old_v - v[state]))
-            converged = True if DELTA < theta else False
-            j += 1
+            v[state] = v[state] + alpha * (G - v[state])
+            if state[0] == 3 and state[1] ==3:
+                break
+            state = n_state
+        j += 1
     print(v)
     for state in grid.state_space:
         i += 1
@@ -162,12 +151,12 @@ def TD(grid, v , policy, gamma, theta):
 
 if __name__ == '__main__':
 
-    grid_size = (8, 6)
-    items = {'fire': {'reward': -100, 'loc': np.asarray([0, 0])},
-             'water': {'reward': 1000, 'loc': np.asarray([2, 5])}}
+    grid_size = (4, 4)
+    items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
+             'water': {'reward': 10, 'loc': np.asarray([3, 3])}}
 
-    gamma = 0.95
-    theta = 1e-10
+    gamma = 0.9
+    theta = 1e-2
 
     v = np.zeros((grid_size[0], grid_size[1]))
     print(v.shape)
