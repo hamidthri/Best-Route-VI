@@ -33,7 +33,7 @@ class GridWorld(object):
 
         if 0 <= future_state[0] < self.m and 0 <= future_state[1] < self.n:
           if self.grid[future_state[0]][future_state[1]] == "G":
-              return 0 
+              return 0
           else:
               return self.grid[future_state[0]][future_state[1]]
         else:
@@ -162,11 +162,22 @@ def iterate_values(grid, v , policy, gamma, theta):
     print(i, 'iterations of state space')
     print(v.shape)
     return v, policy
-
+def map(map):
+    with open('map.txt', 'r') as file:
+        content = file.read()
+    numbers = [int(num) for num in content.split() if num.isdigit()]
+    min_num = min(numbers)
+    max_num = max(numbers)
+    with open('map.txt', 'r') as file:
+        content = file.read()
+    numbers = [[int(num) if num.isdigit() else num for num in line.split()] for line in content.split('\n')]
+    modified_numbers = [[num for num in line] for line in numbers]
+    return np.asarray(modified_numbers)
 
 if __name__ == '__main__':
 
     grid_size = (8, 6)
+    # grid = map('map.txt')
     items = {'fire': {'reward': -10, 'loc': np.asarray([0, 0])},
              'water': {'reward': 100, 'loc': np.asarray([2, 5])}}
 
@@ -174,7 +185,6 @@ if __name__ == '__main__':
     theta = 1e-10
 
     v = np.zeros((grid_size[0], grid_size[1]))
-    print(v.shape)
     policy = np.full((grid_size[0], grid_size[1]), 'n', dtype=object)
 
     env = GridWorld(grid_size, items)
@@ -183,3 +193,6 @@ if __name__ == '__main__':
 
     print_v(v, env)
     print_policy(v, policy, env)
+
+
+
