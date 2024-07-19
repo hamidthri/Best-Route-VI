@@ -1,4 +1,8 @@
-# value_iteration_best_route
+# Value Iteration
+
+![output of value iteration algorithm](https://github.com/hamidthri/value_iteration_best_route/blob/master/VI.png)
+
+
 
 Implemented `value_iteration_best_route`, optimizing pathfinding in a grid-based environment using the value iteration algorithm.
 
