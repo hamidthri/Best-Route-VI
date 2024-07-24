@@ -4,7 +4,14 @@
 
 
 
-Implemented `value_iteration_best_route`, optimizing pathfinding in a grid-based environment using the value iteration algorithm.
+Implemented `Best-Route-VI`, optimizing pathfinding in a grid-based environment using the value iteration algorithm.
+
+##Usage
+
+```bash
+https://github.com/hamidthri/Best-Route-VI
+python test.py
+```
 
 ## State and Action Transitions
 
