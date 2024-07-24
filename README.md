@@ -1,6 +1,6 @@
 # Value Iteration
 
-![output of value iteration algorithm](https://github.com/hamidthri/value_iteration_best_route/blob/master/VI.png)
+![output of value iteration algorithm](https://github.com/hamidthri/Best-Route-VI/blob/master/VI.png)
 
 
 
